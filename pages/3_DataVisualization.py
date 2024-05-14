@@ -14,6 +14,7 @@ from collections import defaultdict
 from pyvis.network import Network
 import streamlit.components.v1 as components
 import spacy
+import matplotlib.pyplot as plt
 
 
 #How to figure out which page is being run like url_scraper the button was clicked or main.py
@@ -77,14 +78,24 @@ chart_data = {
     'Count': [misinformation_count, non_misinformation_count]
 }
 
-st.bar_chart(chart_data, x='Category', y='Count')
+fig, ax = plt.subplots()
+ax.bar(chart_data['Category'], chart_data['Count'])
 
+# Set y-axis ticks to integer values
+ax.set_yticks(range(max(chart_data['Count']) + 1))
+
+# Add labels and title
+ax.set_xlabel('Category')
+ax.set_ylabel('Count')
+ax.set_title('Misinformation Detection')
+
+# Show the plot
+st.pyplot(fig)
 
     
-for i in range(0,len(data)):
-    print(i)
+for l in range(0,len(data)):
     #expanding the contractions in the text
-    contracted_data=contractions.fix(data[i]["transcript"])
+    contracted_data=contractions.fix(data[l]["transcript"])
     text_data = remove_stopwords(contracted_data)
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform([text_data])
@@ -97,7 +108,6 @@ for i in range(0,len(data)):
             for j in range(i + 1, len(tokens)):
                 if tokens[j] in top_keywords:
                     relationships[(tokens[i], tokens[j])] += 1
-    #Pyvis plot
     nodes = set()
     edges = []
     for relationship, weight in relationships.items():
@@ -106,8 +116,7 @@ for i in range(0,len(data)):
             nodes.add(source)
             nodes.add(target)
             edges.append((source, target, weight))
-    #adding heading for the nodes
-    st.text("Figure: Network depicting the relationship between the Top 10 Frequent Words")
+    st.write("Figure: Network depicting the relationship between the Top 10 Frequent Words for "+str(data[l]["video_file"]))
     net = Network(height="500px", width="100%")
     for node in nodes:
         net.add_node(node, label=node, shape="dot")

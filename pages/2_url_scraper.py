@@ -201,49 +201,37 @@ def display_split_files(split_files):
         st.markdown(f"**{file_path}**")
         st.video(file_path)
 
-def transcribe2(video_file):
-    model = whisper.load_model('base')
-    transcript = model.transcribe(video_file)
-    return transcript["text"]
+def transcribe2(video_file_path, client):
+    # Open the video file in binary mode
+    with open(video_file_path, "rb") as video_file:
+        # Assuming client.audio.transcriptions.create() method accepts file-like objects
+        transcript = client.audio.transcriptions.create(
+            model="whisper-1", 
+            file=video_file, 
+            response_format="text"
+        )
+    return transcript
 
 def transcriber(video_file_path, client):
-    print("hello")
-    print(video_file_path)
-    # Check if the file exists
-    if not os.path.exists(video_file_path):
-        raise FileNotFoundError("The specified video file does not exist.")
-    # Get the size of the video file
     file_size = os.path.getsize(video_file_path) / (1024 * 1024)
-    print("file size")
-    print(file_size)
-
-    
-    # Set the threshold for splitting
-    threshold = 8 # MB
-    
+    threshold = 20 
+    num_parts = math.ceil(file_size/threshold)
+    threshold = 8 
     if file_size >= threshold:
         st.info(
             "One of the files you have uploaded is too big for current model capabilities. Attempting to split file. This may take a few minutes."
         )
-        # Split the video file into parts
         input_path = str(video_file_path)
-        with open(video_file_path, "rb") as f:
-            bytes_data = f.read()
-        with open(input_path, "wb") as f:
-            f.write(bytes_data)
-        split_files = split_video(input_path, "output_part", math.ceil(file_size / threshold))
+        split_files = split_video(input_path, "output_part", num_parts)
         st.success("Splitting complete. Check the generated files.")
         st.session_state.split_files = split_files
-        # Transcribe each part separately
         transcript = ""
         for file in split_files:
-            audio_temp_file = convert_to_audio(file)
-            temp_transcript = transcribe(file,client)
+            temp_transcript = transcribe2(file,client)
             transcript += temp_transcript
     else:
-        # Convert video to audio and transcribe
-        audio_temp_file = convert_to_audio(video_file_path)
-        transcript = transcribe(audio_temp_file,client)
+        temp_video_file = video_file_path
+        transcript = transcribe(temp_video_file, client)
     return transcript
 
 def convert_to_audio(video_file_path):
@@ -315,7 +303,12 @@ def main():
         container_array = []
         folder_path = "tmp"
         cnt1=0
-        for i,filename in enumerate(os.listdir(folder_path)):
+        video_files = []
+        files_in_tmp_folder = os.listdir(folder_path)
+        for file_name in files_in_tmp_folder:
+            video_files.append(file_name)
+        #create a list saving the names of the video files
+        for i,filename in enumerate(video_files):
             if filename.endswith(".mp4"):
                 print(filename)
                 container_name = f"container{cnt1+1}"

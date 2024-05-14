@@ -142,28 +142,41 @@ def display_split_files(split_files):
         st.markdown(f"**{file_path}**")
         st.video(file_path)
 
-def transcribe2(video_file):
-    model = whisper.load_model('base')
-    transcript = model.transcribe(video_file)
-    return transcript["text"]
+def transcribe2(video_file_path, client):
+    # Open the video file in binary mode
+    with open(video_file_path, "rb") as video_file:
+        # Assuming client.audio.transcriptions.create() method accepts file-like objects
+        transcript = client.audio.transcriptions.create(
+            model="whisper-1", 
+            file=video_file, 
+            response_format="text"
+        )
+    return transcript
+
 
 def transcriber(video_file, client):
     bytes_data = video_file.getvalue()
+    print(video_file)
     file_size = len(bytes_data)/ (1024 * 1024)
-    threshold = 20 * 1024 * 1024
+    threshold = 20 
     num_parts = math.ceil(file_size/threshold)
+    print("File size:")
     print(file_size)
+    print(threshold)
+    print(math.ceil(file_size/threshold))
+    print(num_parts)
     if file_size >= 20:
         st.info("One of the files you have uploaded is too big for current model capabilities. Attempting to split file. This may take a few minutes.")
         input_path = f"uploaded_video.mp4"
         with open(input_path, 'wb') as f:
             f.write(video_file.read())
         split_files = split_video(input_path, "output_part", num_parts)
+        print(split_files)
         st.success("Splitting complete. Check the generated files.")
         st.session_state.split_files = split_files
         transcript = ""
         for file in split_files:
-            temp_transcript = transcribe2(file)
+            temp_transcript = transcribe2(file,client)
             transcript += temp_transcript
     else:
         temp_video_file = video_file
