@@ -257,6 +257,18 @@ def split_video(video_file_path, output_prefix, num_parts):
         split_files.append(output_path)
     return split_files
 
+def remove_files(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                st.write(f"Deleted {file_path}")
+            elif os.path.isdir(file_path):
+                remove_files(file_path)
+        except Exception as e:
+            st.write(f"Error deleting {file_path}: {e}")
+
 def main():
     st.title("Automatic Misinformation Analysis")
     if "api_key" not in st.session_state:
@@ -361,6 +373,12 @@ def main():
         print(data)
         st.session_state.dataurl=data
         print(st.session_state.dataurl)
+    directory_path = "tmp"
+    if st.button("Remove Files"):
+        remove_files(directory_path)
+        st.success("Files removal process completed.")
+        
+
             
 
 if __name__ == "__main__":
