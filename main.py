@@ -183,6 +183,17 @@ def transcriber(video_file, client):
         transcript = transcribe(temp_video_file, client)
     return transcript
 
+def remove_files(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                st.write(f"Deleted {file_path}")
+            elif os.path.isdir(file_path):
+                remove_files(file_path)
+        except Exception as e:
+            st.write(f"Error deleting {file_path}: {e}")
 
 def main():
     st.title("Automatic Misinformation Analysis")
@@ -272,6 +283,11 @@ def main():
             file_name=f'results_{date_today_with_time}.csv',
             mime='text/plain',
             key=download_button_key)
+     directory_path = "tmp"
+     if st.button("Remove Files"):
+         remove_files(directory_path)
+         st.success("Files removal process completed.")
+        
 
 if __name__ == "__main__":
     main()
