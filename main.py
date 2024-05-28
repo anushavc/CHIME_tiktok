@@ -197,7 +197,6 @@ def remove_files(directory):
 
 def main():
     st.title("Automatic Misinformation Analysis")
-
     if "api_key" not in st.session_state:
         st.session_state["api_key"] = ""
     if "check_done" not in st.session_state:
@@ -283,10 +282,10 @@ def main():
             file_name=f'results_{date_today_with_time}.csv',
             mime='text/plain',
             key=download_button_key)
-     directory_path = "tmp"
-     if st.button("Remove Files"):
-         remove_files(directory_path)
-         st.success("Files removal process completed.")
+    directory_path = "tmp"
+    if st.button("Remove Files"):
+        remove_files(directory_path)
+        st.success("Files removal process completed.")
         
 
 if __name__ == "__main__":
