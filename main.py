@@ -9,6 +9,11 @@ import math
 import time
 import whisper 
 
+def remove_uploaded_files():
+    if "uploaded_files" in st.session_state:
+        for file_info in st.session_state.uploaded_files:
+            st.session_state.pop(file_info["file_name"], None)
+            
 def is_api_key_valid(api_key, client):
     try:
         response = client.chat.completions.create(
@@ -183,18 +188,6 @@ def transcriber(video_file, client):
         transcript = transcribe(temp_video_file, client)
     return transcript
 
-def remove_files(directory):
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        try:
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-                st.write(f"Deleted {file_path}")
-            elif os.path.isdir(file_path):
-                remove_files(file_path)
-        except Exception as e:
-            st.write(f"Error deleting {file_path}: {e}")
-
 def main():
     st.title("Automatic Misinformation Analysis")
     if "api_key" not in st.session_state:
@@ -282,10 +275,8 @@ def main():
             file_name=f'results_{date_today_with_time}.csv',
             mime='text/plain',
             key=download_button_key)
-    directory_path = "tmp"
     if st.button("Remove Files"):
-        remove_files(directory_path)
-        st.success("Files removal process completed.")
+        remove_uploaded_files()
         
 
 if __name__ == "__main__":
