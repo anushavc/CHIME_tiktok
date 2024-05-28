@@ -129,21 +129,3 @@ for l in range(0,len(data)):
     net.save_graph(f'{path}/pyvis_graph.html')
     HtmlFile = open(f'{path}/pyvis_graph.html','r',encoding='utf-8')
     components.html(HtmlFile.read(), height=435)
-import os
-def remove_files(directory):
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        try:
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-                print(f"Deleted {file_path}")
-            elif os.path.isdir(file_path):
-                remove_files(file_path)
-        except Exception as e:
-            print(f"Error deleting {file_path}: {e}")
-
-# Define the directory path where the files are stored (e.g., 'tmp' directory)
-directory_path = "tmp"
-
-# Remove all files in the specified directory
-remove_files(directory_path)
